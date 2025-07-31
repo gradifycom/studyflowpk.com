@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>StudyFlow Chatbot</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #3a0ca3; /* Darker primary color */
+      --primary-light: #4361ee;
+      --primary-lighter: rgba(58, 12, 163, 0.1);
+      --accent: #1D4ED8;
+      --accent-light: rgba(29, 78, 216, 0.1);
+      --text-dark: #1F2937;
+      --text-medium: #4B5563;
+      --text-light: #FFFFFF;
+      --text-secondary: #60A5FA;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+      --glow: 0 5px 20px rgba(58, 12, 163, 0.2);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      --bg-color: #3a0ca3; /* Darker background */
+      --chat-bg: #F8FAFC;
+      --bot-bubble: #EFF6FF;
+      --user-bubble: #3a0ca3; /* Darker user bubble */
+      --primary-dark: #1D4ED8;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: #fafafa;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0;
+      touch-action: manipulation;
+    }
+
+    .chat-container {
+      width: 100%;
+      max-width: 100%;
+      height: 100vh;
+      background: var(--chat-bg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-radius: 0;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      border: 1px solid rgba(58, 12, 163, 0.1);
+    }
+
+    @media (min-width: 500px) {
+      .chat-container {
+        max-width: 500px;
+        height: 90vh;
+        border-radius: var(--radius-lg);
+      }
+      body {
+        padding: 20px;
+      }
+    }
+
+    .chat-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: var(--text-light);
+      text-align: center;
+      font-size: 1.2rem;
+      padding: 1.25rem;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .chat-header svg {
+      margin-right: 10px;
+      stroke-width: 2.5px;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 15px 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      -webkit-overflow-scrolling: touch;
+      background-color: var(--chat-bg);
+      background-image: radial-gradient(circle at 1px 1px, rgba(58, 12, 163, 0.05) 1px, transparent 0);
+      background-size: 20px 20px;
+    }
+
+    .message {
+      max-width: 85%;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      animation: fadeIn 0.3s ease;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      box-shadow: var(--shadow-sm);
+      word-wrap: break-word;
+      position: relative;
+      transition: var(--transition);
+    }
+
+    .bot-message {
+      background: var(--bot-bubble);
+      color: var(--text-dark);
+      align-self: flex-start;
+      border-bottom-left-radius: var(--radius-sm);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid rgba(58, 12, 163, 0.1);
+    }
+
+    .bot-message::before {
+      content: "";
+      position: absolute;
+      left: -8px;
+      top: 0;
+      width: 16px;
+      height: 16px;
+      background: var(--bot-bubble);
+      transform: rotate(45deg);
+      border-left: 1px solid rgba(58, 12, 163, 0.1);
+      border-bottom: 1px solid rgba(58, 12, 163, 0.1);
+      z-index: -1;
+    }
+
+    .user-message {
+      background: linear-gradient(135deg, var(--user-bubble) 0%, var(--primary-light) 100%);
+      color: var(--text-light);
+      align-self: flex-end;
+      border-bottom-right-radius: var(--radius-sm);
+      box-shadow: 0 2px 8px rgba(58, 12, 163, 0.3);
+    }
+
+    .typing {
+      width: 60px;
+      height: 32px;
+      background: var(--bot-bubble);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 8px 12px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid rgba(58, 12, 163, 0.1);
+      position: relative;
+    }
+
+    .typing::before {
+      content: "";
+      position: absolute;
+      left: -8px;
+      top: 0;
+      width: 16px;
+      height: 16px;
+      background: var(--bot-bubble);
+      transform: rotate(45deg);
+      border-left: 1px solid rgba(58, 12, 163, 0.1);
+      border-bottom: 1px solid rgba(58, 12, 163, 0.1);
+      z-index: -1;
+    }
+
+    .typing span {
+      width: 8px;
+      height: 8px;
+      background: var(--primary-dark);
+      border-radius: 50%;
+      animation: bounce 0.8s infinite ease-in-out alternate;
+      opacity: 0.7;
+    }
+
+    .typing span:nth-child(1) { animation-delay: 0s; }
+    .typing span:nth-child(2) { animation-delay: 0.2s; }
+    .typing span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      0% { transform: translateY(0) scale(1); opacity: 0.7; }
+      100% { transform: translateY(-5px) scale(1.1); opacity: 1; }
+    }
+
+    .options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .option-btn {
+      background: white;
+      color: var(--primary-dark);
+      border: none;
+      border-radius: 20px;
+      padding: 10px 16px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: var(--transition);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid rgba(58, 12, 163, 0.3);
+    }
+
+    .option-btn:hover {
+      background: rgba(58, 12, 163, 0.1);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(58, 12, 163, 0.2);
+    }
+
+    .option-btn:active {
+      background: rgba(58, 12, 163, 0.2);
+      transform: translateY(0);
+    }
+
+    .input-container {
+      display: flex;
+      padding: 15px;
+      background: white;
+      border-top: 1px solid rgba(58, 12, 163, 0.1);
+      position: sticky;
+      bottom: 0;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
+    }
+
+    .chat-input {
+      flex: 1;
+      padding: 12px 18px;
+      border-radius: 24px;
+      border: 1px solid rgba(58, 12, 163, 0.3);
+      font-size: 0.95rem;
+      outline: none;
+      transition: var(--transition);
+      background: white;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .chat-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(58, 12, 163, 0.2);
+    }
+
+    .send-btn {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: var(--text-light);
+      border: none;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      margin-left: 10px;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(58, 12, 163, 0.4);
+    }
+
+    .send-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(58, 12, 163, 0.4);
+    }
+
+    .send-btn:active {
+      transform: translateY(0);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .resource-link {
+      display: inline-block;
+      margin-top: 8px;
+      color: var(--primary-dark);
+      text-decoration: none;
+      font-weight: 600;
+      transition: var(--transition);
+      border-bottom: 2px solid transparent;
+      padding-bottom: 2px;
+    }
+
+    .resource-link:hover {
+      color: var(--primary-dark);
+      border-bottom: 2px solid var(--primary);
+    }
+
+    /* Enhanced notes preview */
+    .notes-preview {
+      background: white;
+      border-radius: var(--radius-md);
+      padding: 15px;
+      margin-top: 15px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid rgba(58, 12, 163, 0.1);
+      position: relative;
+    }
+
+    .notes-preview::before {
+      content: "";
+      position: absolute;
+      left: -8px;
+      top: 0;
+      width: 16px;
+      height: 16px;
+      background: white;
+      transform: rotate(45deg);
+      border-left: 1px solid rgba(58, 12, 163, 0.1);
+      border-bottom: 1px solid rgba(58, 12, 163, 0.1);
+      z-index: -1;
+    }
+
+    .notes-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .notes-icon {
+      width: 40px;
+      height: 40px;
+      background-color: var(--primary);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 10px;
+    }
+
+    .notes-icon i {
+      color: white;
+      font-size: 1.2rem;
+    }
+
+    .notes-title {
+      font-weight: 600;
+      color: var(--primary-dark);
+    }
+
+    .notes-content {
+      display: flex;
+      margin-top: 10px;
+    }
+
+    .notes-image {
+      width: 80px;
+      height: 100px;
+      background-color: #f0f0f0;
+      border-radius: 4px;
+      margin-right: 10px;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%233a0ca3"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM8 15c0-1.66 1.34-3 3-3 .35 0 .69.07 1 .18V8h3V6h-4v4.17c-.31-.11-.65-.17-1-.17-1.66 0-3 1.34-3 3s1.34 3 3 3c.35 0 .69-.06 1-.17V16H9v-2h1.17c-.1-.31-.17-.65-.17-1z"/></svg>');
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 40%;
+      border: 1px dashed rgba(58, 12, 163, 0.3);
+    }
+
+    .notes-details {
+      flex: 1;
+    }
+
+    .notes-description {
+      font-size: 0.85rem;
+      color: var(--text-medium);
+      margin-bottom: 10px;
+    }
+
+    .notes-meta {
+      display: flex;
+      font-size: 0.75rem;
+      color: var(--text-medium);
+    }
+
+    .notes-meta span {
+      margin-right: 10px;
+      display: flex;
+      align-items: center;
+    }
+
+    .notes-meta i {
+      margin-right: 3px;
+      font-size: 0.8rem;
+      color: var(--primary);
+    }
+
+    /* Scrollbar styling */
+    .chat-messages::-webkit-scrollbar {
+      width: 6px;
+    }
+    .chat-messages::-webkit-scrollbar-track {
+      background: rgba(58, 12, 163, 0.05);
+    }
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: rgba(58, 12, 163, 0.2);
+      border-radius: 3px;
+    }
+    .chat-messages::-webkit-scrollbar-thumb:hover {
+      background: rgba(58, 12, 163, 0.3);
+    }
+
+    /* Mobile-specific optimizations */
+    @media (max-width: 500px) {
+      .message {
+        max-width: 90%;
+        padding: 10px 14px;
+        font-size: 0.9rem;
+      }
+      
+      .option-btn {
+        padding: 8px 12px;
+        font-size: 0.82rem;
+      }
+      
+      .chat-input {
+        padding: 10px 16px;
+      }
+
+      .chat-header {
+        font-size: 1.1rem;
+        padding: 1rem;
+      }
+
+      .input-container {
+        padding: 12px;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+      StudyFlow Assistant
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="input-container">
+      <input type="text" class="chat-input" id="user-input" placeholder="Type your message..." autocapitalize="sentences" autocomplete="off">
+      <button class="send-btn" id="send-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+<script>
+  const messages = document.getElementById("chat-messages");
+  const userInput = document.getElementById('user-input');
+  const sendBtn = document.getElementById('send-btn');
+
+  const state = {
+    board: null,
+    cls: null,
+    subject: null,
+    chapter: null,
+    chapterType: null,
+    medium: null
+  };
+
+  sendBtn.addEventListener('click', sendMessage);
+  userInput.addEventListener('keypress', e => {
+    if (e.key === 'Enter') sendMessage();
+  });
+
+  function appendMessage(content, sender = 'bot', isHTML = false) {
+    const msg = document.createElement("div");
+    msg.className = `message ${sender}-message`;
+    msg.innerHTML = isHTML ? content : content.replace(/\n/g, '<br>');
+    messages.appendChild(msg);
+    scrollToBottom();
+  }
+
+  function scrollToBottom() {
+    messages.scrollTop = messages.scrollHeight;
+    setTimeout(() => {
+      messages.scrollTop = messages.scrollHeight;
+    }, 100);
+  }
+
+  function showTyping(callback) {
+    const typing = document.createElement("div");
+    typing.className = "message bot-message typing";
+    typing.innerHTML = `<span></span><span></span><span></span>`;
+    messages.appendChild(typing);
+    scrollToBottom();
+    setTimeout(() => {
+      typing.remove();
+      callback();
+    }, 1000);
+  }
+
+  function showOptions(options, onClick) {
+    const container = document.createElement('div');
+    container.className = 'options';
+    options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.textContent = opt;
+      btn.onclick = () => {
+        appendMessage(opt, 'user');
+        container.remove();
+        showTyping(() => onClick(opt));
+      };
+      container.appendChild(btn);
+    });
+    messages.appendChild(container);
+    scrollToBottom();
+  }
+
+  function sendMessage() {
+    const message = userInput.value.trim();
+    if (message) {
+      appendMessage(message, 'user');
+      userInput.value = '';
+      showTyping(() => {
+        appendMessage("I'm a study assistant. Please use the buttons to navigate.");
+      });
+    }
+    userInput.focus();
+  }
+
+  function createNotesPreview(subject, chapter, type = null) {
+    let title = `${subject} Notes`;
+    if (type) {
+      title = `${subject} ${type} Notes`;
+    }
+    
+    return `
+      <div class="notes-preview">
+        <div class="notes-header">
+          <div class="notes-icon">
+            <i class="fas fa-book-open"></i>
+          </div>
+          <div class="notes-title">${title} - Chapter ${chapter}</div>
+        </div>
+        <div class="notes-content">
+          <div class="notes-image"></div>
+          <div class="notes-details">
+            <div class="notes-description">
+              Comprehensive notes covering all key concepts, definitions, and examples for this chapter.
+            </div>
+            <div class="notes-meta">
+              <span><i class="fas fa-file-alt"></i> PDF</span>
+              <span><i class="fas fa-file-pdf"></i> 2.4MB</span>
+              <span><i class="fas fa-star"></i> 4.8</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function startBot() {
+    showTyping(() => {
+      appendMessage("Hello! I'm StudyFlow, your learning assistant. 🌟");
+      showTyping(() => {
+        appendMessage("Let's get started! Select your board:");
+        showOptions(["Punjab", "Federal"], handleBoard);
+      });
+    });
+  }
+
+  function handleBoard(input) {
+    state.board = input;
+    appendMessage("Great choice! Now select your class:");
+    showOptions(["9", "10"], handleClass);
+  }
+
+  function handleClass(input) {
+    state.cls = input;
+    appendMessage("Awesome! Choose your subject:");
+    const subjects = input === "9"
+      ? ["English", "Math", "Physics", "Chemistry", "Biology", "Urdu", "Pak Study"]
+      : ["English", "Math", "Physics", "Chemistry", "Biology", "Urdu", "Pak Study"];
+    showOptions(subjects, handleSubject);
+  }
+
+  function handleSubject(input) {
+    state.subject = input;
+    if (input === 'Urdu') {
+      appendMessage("Choose type:");
+      showOptions(["Chapter", "Nazam", "Ghazal"], type => {
+        state.chapterType = type;
+
+        let chapters = [];
+        if (type === 'Chapter') {
+          chapters = Array.from({ length: 12 }, (_, i) => `${i + 1}`);
+        } else if (type === 'Nazam') {
+          chapters = ['1', '2', '15', '16', '17', '18', '19', '20'];
+        } else if (type === 'Ghazal') {
+          chapters = ['21', '22', '23', '24'];
+        }
+
+        appendMessage(`Choose ${type}:`);
+        showOptions(chapters, handleChapter);
+      });
+    } else if (input === 'Biology') {
+      const startChapter = state.cls === '9' ? 1 : 10;
+      const endChapter = state.cls === '9' ? 9 : 18;
+      const chapters = Array.from({ length: endChapter - startChapter + 1 }, (_, i) => `${i + startChapter}`);
+      appendMessage("Select chapter:");
+      showOptions(chapters, handleChapter);
+    } else if (input === 'Pak Study') {
+      appendMessage("Select language medium:");
+      showOptions(["English", "Urdu"], medium => {
+        state.medium = medium;
+        const startChapter = state.cls === '9' ? 1 : 5;
+        const endChapter = state.cls === '9' ? 4 : 8;
+        const chapters = Array.from({ length: endChapter - startChapter + 1 }, (_, i) => `${i + startChapter}`);
+        appendMessage("Select chapter:");
+        showOptions(chapters, handleChapter);
+      });
+    } else {
+      let chapters;
+      if (state.cls === '10' && input === 'Physics') {
+        chapters = Array.from({ length: 9 }, (_, i) => `${i + 10}`);
+      } else if (state.cls === '10' && input === 'Chemistry') {
+        chapters = Array.from({ length: 8 }, (_, i) => `${i + 9}`);
+      } else {
+        let total = 12;
+        if (state.cls === '9') {
+          total = input === 'Math' ? 17 : 12;
+        } else {
+          if (input === 'Math') total = 13;
+          if (input === 'English') total = 13;
+        }
+        chapters = Array.from({ length: total }, (_, i) => `${i + 1}`);
+      }
+      appendMessage("Select chapter:");
+      showOptions(chapters, handleChapter);
+    }
+  }
+
+  function handleChapter(input) {
+    state.chapter = input;
+    const subject = state.subject;
+
+    if (subject === 'Biology') {
+      showOptions(["📚 Notes", "📝 Past Paper"], handleOption);
+    } else if (subject === 'Pak Study') {
+      showOptions(["📚 Notes", "📝 Past Paper"], handleOption);
+    } else if (subject === 'Urdu' && state.chapterType === 'Chapter') {
+      showOptions(["📚 Notes", "❓ MCQs", "📝 Past Paper"], handleOption);
+    } else {
+      const optionsMap = {
+        English: ["🌍 Translation", "❓ Q/A", "📖 Summary", "🔠 MCQs", "📝 Past Paper"],
+        Math: ["✏️ Exercise", "📝 Past Paper"],
+        Physics: ["⚛️ Exercise", "📝 Past Paper"],
+        Chemistry: ["🧪 Exercise", "📝 Past Paper"],
+        Urdu: ["📚 Notes", "📝 Past Paper"]
+      };
+      appendMessage("Select option:");
+      showOptions(optionsMap[subject], handleOption);
+    }
+  }
+
+  function handleOption(input) {
+    const s = state.subject;
+    const c = parseInt(state.chapter);
+    const pad = c < 10 ? `0${c}` : `${c}`;
+    const t = state.chapterType;
+    const b = state.board;
+    const cls = state.cls;
+    const medium = state.medium;
+
+    const pastPaperLink = b === 'Federal'
+      ? 'https://www.fbise.edu.pk/Old%20Question%20Paper.php'
+      : 'https://www.urdupoint.com/education/past-papers/board.html';
+
+    if (input.includes("Past Paper")) {
+      return appendMessage(
+        `<a href="${pastPaperLink}" target="_blank" class="resource-link">📄 View ${b} Board ${s} Past Papers</a>`,
+        'bot',
+        true
+      );
+    }
+
+    if (s === 'Biology') {
+      if (input.includes("Notes")) {
+        const bioLink = cls === '10'
+          ? 'https://www.freeilm.com/10th-class-biology-notes-short-long-mcqs/'
+          : 'https://www.freeilm.com/class-9-biology-notes-short-long-mcqs/';
+        
+        const bioMessage = cls === '10'
+          ? `📚 Here are complete Biology notes for Class 10: <br><br>
+             <a href="${bioLink}" target="_blank" class="resource-link">✨ View All Biology Notes (Short, Long, MCQs)</a>
+             ${createNotesPreview('Biology', c)}`
+          : `📚 Here are complete Biology notes for Class 9: <br><br>
+             <a href="${bioLink}" target="_blank" class="resource-link">✨ View All Biology Notes (Short, Long, MCQs)</a>
+             ${createNotesPreview('Biology', c)}`;
+        
+        return appendMessage(bioMessage, 'bot', true);
+      }
+    }
+
+    if (s === 'Pak Study') {
+      if (input.includes("Notes")) {
+        let pakStudyLink = '';
+        if (cls === '9') {
+          pakStudyLink = medium === 'English' 
+            ? `https://www.freeilm.com/9th-class-pak-studies-chapter-${c}-eng-medium-new/`
+            : `https://www.freeilm.com/class-9-pak-studies-chapter-${c}-urdu-medium-new/`;
+        } else {
+          pakStudyLink = medium === 'English'
+            ? `https://www.freeilm.com/10th-class-pak-studies-chapter-${c}-eng-medium-new/`
+            : `https://www.freeilm.com/class-10-pak-studies-chapter-${c}-urdu-medium-new/`;
+        }
+        
+        const pakStudyMessage = `📚 Here are Pakistan Studies notes for Class ${cls}, Chapter ${c} (${medium} medium): <br><br>
+           <a href="${pakStudyLink}" target="_blank" class="resource-link">✨ View Chapter ${c} Notes</a>
+           ${createNotesPreview('Pakistan Studies', c)}`;
+        
+        return appendMessage(pakStudyMessage, 'bot', true);
+      }
+    }
+
+    if (s === 'English') {
+      if (input.includes("Translation")) {
+        return appendMessage(
+          `<a href="https://www.freeilm.com/${cls === '10' ? '10th' : '9th'}-class-english-unit-${c}-translation/" target="_blank" class="resource-link">🌍 View Translation</a>`,
+          'bot',
+          true
+        );
+      }
+      if (input.includes("Q/A")) {
+        return appendMessage(
+          `<a href="https://www.freeilm.com/${cls === '10' ? '10th' : '9th'}-class-english-${cls === '10' ? 'questions-answers-notes' : 'chapters-questions-answers'}/" target="_blank" class="resource-link">❓ View Q/A</a>`,
+          'bot',
+          true
+        );
+      }
+      if (input.includes("Summary")) {
+        return appendMessage(
+          `<a href="https://www.freeilm.com/${cls === '10' ? '10th' : '9th'}-class-english-summary${cls === '10' ? '-notes' : ''}/" target="_blank" class="resource-link">📖 View Summary</a>`,
+          'bot',
+          true
+        );
+      }
+      if (input.includes("MCQs")) {
+        return appendMessage("🔠 MCQs not available yet.", 'bot');
+      }
+    }
+
+    if (s === 'Math' && input.includes("Exercise")) {
+      return appendMessage(
+        `<a href="https://www.freeilm.com/chapter-${c}-${cls}th-class-math-solution-pdf/" target="_blank" class="resource-link">✏️ View Math Exercise</a>
+        ${createNotesPreview('Math', c)}`,
+        'bot',
+        true
+      );
+    }
+
+    if (s === 'Physics' && input.includes("Exercise")) {
+      return appendMessage(
+        `<a href="https://www.freeilm.com/${cls}th-physics-ch-${pad}-numericals-short-long-mcqs/" target="_blank" class="resource-link">⚛️ View Physics Exercise</a>
+        ${createNotesPreview('Physics', c)}`,
+        'bot',
+        true
+      );
+    }
+
+    if (s === 'Chemistry' && input.includes("Exercise")) {
+      return appendMessage(
+        `<a href="https://www.freeilm.com/10th-chemistry-ch-${c}-short-long-mcqs-numericals/" target="_blank" class="resource-link">🧪 View Chemistry Exercise</a>
+        ${createNotesPreview('Chemistry', c)}`,
+        'bot',
+        true
+      );
+    }
+
+    if (s === 'Urdu') {
+      if (t === 'Chapter') {
+        if (input.includes("Notes")) {
+          return appendMessage(
+            `<a href="https://www.freeilm.com/chapter-${c}-10th-class-urdu-notes/" target="_blank" class="resource-link">📚 View Urdu Notes</a>
+            ${createNotesPreview('Urdu', c, 'Chapter')}`,
+            'bot',
+            true
+          );
+        }
+        if (input.includes("MCQs")) {
+          return appendMessage(
+            `<a href="https://www.freeilm.com/chapter-${c}-10th-class-urdu-mcqs/" target="_blank" class="resource-link">❓ View Urdu MCQs</a>`,
+            'bot',
+            true
+          );
+        }
+      } else if (t === 'Nazam') {
+        return appendMessage(
+          `<a href="https://www.freeilm.com/nazam-${c}-10th-class-urdu-notes/" target="_blank" class="resource-link">📜 View Nazam Notes</a>
+          ${createNotesPreview('Urdu', c, 'Nazam')}`,
+          'bot',
+          true
+        );
+      } else if (t === 'Ghazal') {
+        return appendMessage(
+          `<a href="https://www.freeilm.com/ghazal-${c}-10th-class-urdu-notes/" target="_blank" class="resource-link">✍️ View Ghazal Notes</a>
+          ${createNotesPreview('Urdu', c, 'Ghazal')}`,
+          'bot',
+          true
+        );
+      }
+    }
+  }
+
+  startBot();
+</script>
+</body>
+</html>

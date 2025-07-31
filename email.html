@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StudyFlow - Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #4361ee;
+      --primary-dark: #3a0ca3;
+      --secondary: #FFFFFF;
+      --text: #333333;
+      --light-gray: #F5F5F5;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--secondary);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
+      overflow-x: hidden;
+    }
+    
+    /* New left-to-right transition */
+    .slide-transition {
+      position: fixed;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background-color: var(--primary);
+      z-index: 9999;
+      transition: left 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+    }
+    
+    .slide-transition.active {
+      left: 0;
+    }
+    
+    .form-container {
+      background: var(--secondary);
+      padding: 2.5rem;
+      border-radius: 15px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+      width: 380px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .logo-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+    
+    .logo-icon {
+      width: 50px;
+      height: 50px;
+      background-color: var(--primary);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 15px;
+      transform: rotate(15deg);
+    }
+    
+    .logo-icon i {
+      font-size: 1.8rem;
+      color: var(--secondary);
+    }
+    
+    .logo-text {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    
+    .logo-text span {
+      color: var(--primary);
+    }
+    
+    h2 {
+      color: var(--text);
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+    }
+    
+    input[type="text"],
+    input[type="email"] {
+      width: 100%;
+      padding: 1rem;
+      margin: 0.5rem 0;
+      border: 2px solid #eee;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: 'Poppins', sans-serif;
+      transition: all 0.3s;
+    }
+    
+    input[type="text"]:focus,
+    input[type="email"]:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+    }
+    
+    button {
+      width: 100%;
+      padding: 1rem;
+      background-color: var(--primary);
+      color: var(--secondary);
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 1.5rem;
+      transition: all 0.3s;
+      font-family: 'Poppins', sans-serif;
+    }
+    
+    button:hover {
+      background-color: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(58, 12, 163, 0.3);
+    }
+    
+    .remember {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #666;
+    }
+    
+    .remember input {
+      margin-right: 8px;
+      accent-color: var(--primary);
+    }
+    
+    .welcome-message {
+      animation: fadeIn 0.5s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @media (max-width: 480px) {
+      .form-container {
+        width: 90%;
+        padding: 2rem 1.5rem;
+      }
+      
+      .logo-text {
+        font-size: 1.5rem;
+      }
+      
+      .logo-icon {
+        width: 40px;
+        height: 40px;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+  <div class="slide-transition"></div>
+  
+  <div class="form-container" id="form-container">
+    <div class="logo-container">
+      <div class="logo-icon">
+        <i class="fas fa-graduation-cap"></i>
+      </div>
+      <div class="logo-text">Study<span>Flow</span></div>
+    </div>
+    
+    <h2>Enter Your Info</h2>
+    <form id="userForm">
+      <input type="text" name="username" id="username" placeholder="Username" required>
+      <input type="email" name="email" id="email" placeholder="Email" required>
+      <div class="remember">
+        <input type="checkbox" id="rememberMe" />
+        <label for="rememberMe">Remember Me</label>
+      </div>
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+
+<script>
+  // Activate the slide transition on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    const transition = document.querySelector('.slide-transition');
+    
+    // Start with transition covering the page
+    transition.style.left = '0';
+    
+    // After a brief delay, slide it out
+    setTimeout(function() {
+      transition.style.left = '100%';
+    }, 100);
+  });
+
+  const form = document.getElementById("userForm");
+  const rememberMe = document.getElementById("rememberMe");
+  const formContainer = document.getElementById("form-container");
+
+  // Check if already remembered
+  window.onload = () => {
+    const remembered = localStorage.getItem("rememberUser");
+    const username = localStorage.getItem("rememberedUsername");
+    if (remembered === "true" && username) {
+      formContainer.innerHTML = `
+        <div class="logo-container">
+          <div class="logo-icon">
+            <i class="fas fa-graduation-cap"></i>
+          </div>
+          <div class="logo-text">Study<span>Flow</span></div>
+        </div>
+        <div class="welcome-message">
+          <h2>Welcome back, ${username}!</h2>
+          <button onclick="redirectToHome()">Continue</button>
+        </div>
+      `;
+    }
+  };
+
+  function redirectToHome() {
+    const transition = document.querySelector('.slide-transition');
+    
+    // Activate the slide transition
+    transition.style.left = '0';
+    
+    // After the slide completes, navigate to home2.html
+    setTimeout(function() {
+      window.location.href = 'home2.html';
+    }, 600);
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const username = document.getElementById("username").value.trim();
+    const email = document.getElementById("email").value.trim();
+
+    if (!username || !email) return;
+
+    // Save in localStorage if remember me checked
+    if (rememberMe.checked) {
+      localStorage.setItem("rememberUser", "true");
+      localStorage.setItem("rememberedUsername", username);
+    }
+
+    // Send data to Basin using fetch (AJAX)
+    fetch("https://usebasin.com/f/your-basin-endpoint-id", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({
+        username: username,
+        email: email
+      })
+    })
+    .then(response => {
+      if (response.ok) {
+        // Show Continue button on success
+        formContainer.innerHTML = `
+          <div class="logo-container">
+            <div class="logo-icon">
+              <i class="fas fa-graduation-cap"></i>
+            </div>
+            <div class="logo-text">Study<span>Flow</span></div>
+          </div>
+          <div class="welcome-message">
+            <h2>Thank you, ${username}!</h2>
+            <button onclick="redirectToHome()">Continue</button>
+          </div>
+        `;
+      } else {
+        alert("Something went wrong. Please try again.");
+      }
+    })
+    .catch(error => {
+      console.error("Basin Error:", error);
+      alert("Failed to send. Check your connection.");
+    });
+  });
+</script>
+</body>
+</html>
